@@ -5,10 +5,9 @@ include("../src/Models.jl")
 include("../src/Data.jl")
 include("../src/Assumptions.jl")
 include("../src/Fixed_params.jl")
-include("../src/Predictions.jl")
-using .Predictions
 
-data = DataTools.load_tumor_datasets(data_dir = joinpath(@__DIR__, "..", "Data"))
+
+data = DataTools.load_tumor_datasets()
 
 tdata_mp = data.mp.t
 ydata_mp = data.mp.y
@@ -39,6 +38,21 @@ cb_mpb1 = ContinuousCallback((u, t, integrator) -> u[1] - T0_mpb1, terminate!; r
 sol_mp = solve(prob_mp, Vern7(), callback = cb_mp, abstol = 1e-8, reltol = 1e-6)
 sol_mpb1 = solve(prob_mpb1, Vern7(), callback = cb_mpb1, abstol = 1e-8, reltol = 1e-6)
 
+# Debug output to check if the tumour reaches the target sizes within 300 days
+# if sol_mp.t[end] < 300.0 && sol_mp.u[end][1] >= T0_mp - 1e-8
+#     println("MP tumour reached 106.0 mm^3 at t = ", sol_mp.t[end], " days")
+# else
+#     println("MP tumour did not reach 106.0 mm^3 within 300 days.")
+#     println("  max T reached = ", sol_mp.u[end][1])
+# end
+
+# if sol_mpb1.t[end] < 300.0 && sol_mpb1.u[end][1] >= T0_mpb1 - 1e-8
+#     println("MPB1 tumour reached 62.0 mm^3 at t = ", sol_mpb1.t[end], " days")
+# else
+#     println("MPB1 tumour did not reach 62.0 mm^3 within 300 days.")
+#     println("  max T reached = ", sol_mpb1.u[end][1])
+# end
+
 
 # Shift time data so that the first data point (experimental t=0) is treated as being at t=43 days in the model
 # This means shifting all data times forward by the time it takes to reach T0
@@ -57,13 +71,19 @@ println("MPB1: First data point (experimental t=0) now treated as model t = ", t
 # With parameters r, p and q to be fitted, and the rest of the parameters fixed based on assumptions and literature values (see Assumptions.jl and Fixed_params.jl)
 
 # Load immune data and proportions via DataTools
-immune = DataTools.load_immune_datasets(data_dir = joinpath(@__DIR__, "..", "Data"))
+immune = DataTools.load_immune_datasets()
 df_immune_mp = immune.df_immune_mp
 df_immune_mpb1 = immune.df_immune_mpb1
 nk_cells_prop_mp = immune.nk_cells_prop_mp
 nk_cells_prop_mpb1 = immune.nk_cells_prop_mpb1
 t_cells_prop_mp = immune.t_cells_prop_mp
 t_cells_prop_mpb1 = immune.t_cells_prop_mpb1
+
+# #
+# # Normally in Assumptions, here the code for looking at impact of cell count proportions
+# prop_cd45_cells = 0.6  # assuming 20, 40 or 60% infiltration of CD45+ cells
+# prop_cd8cells_in_t_cells = 0.4  # assuming 20, 30 or 40% of T cells are CD8+
+# #
 
 # Cell counts for NK and T cells, using the assumptions defined in Assumptions.jl
 nk_cell_count_mp = nk_cells_prop_mp * prop_cd45_cells * total_cell_count
@@ -95,9 +115,13 @@ t_immune_mpb1 = 10.0 + time_to_T0_mpb1
 
 # Initial estimates for fitted params
 r_0_mp = 1.7      # (1/days), informed on prior fitting runs of tumour-immune cells model
+# should be 0.305 from prior fitting of logistic growth to MP vehicle data
 r_0_mpb1 = 1.8    # (1/days), informed on prior fitting runs of tumour-immune cells model
+# should be 0.423 from prior fitting of logistic growth to MPB1 vehicle data
 pN_0 = 0.001      # (1/mm3*day), informed on prior fitting runs of tumour-immune cells model
+# was p = 0.1 (1/mm3*day) adapted from de Pillis et al. 2005
 q_0 = 0.001       # (1/mm3*day),
+# was q = 3.42e-4 (1/mm3*day), adapted from de Pillis et al. 2005
 
 # Bounds
 r_min = 0.0
@@ -115,6 +139,17 @@ q_max = 1.0
 u0_immune_mp = [tumour_initial_size, (fixed_params_mp.N0 / fixed_params_mp.dN), 0.0]
 u0_immune_mpb1 = [tumour_initial_size, (fixed_params_mpb1.N0 / fixed_params_mpb1.dN), 0.0]
 
+include("../src/Predictions.jl")
+using .Predictions
+#tumour_immune_model_mp_with_immune = (t, p) -> Predictions.predict_tumour_immune(t, t_immune_mp, p, u0_immune_mp, fixed_params_mp)
+#tumour_immune_model_mpb1_with_immune = (t, p) -> Predictions.predict_tumour_immune(t, t_immune_mpb1, p, u0_immune_mpb1, fixed_params_mpb1)
+
+# Fit the immune model to combined tumour and immune cell data for MP and MPB1
+# fit_immune_mp = curve_fit(tumour_immune_model_mp_with_immune, tdata_mp_shifted, ydata_mp_combined, [r_0_mp, pN_0, q_0], 
+#                            lower=[r_min, pN_min, q_min], upper=[r_max, pN_max, q_max])
+# fit_immune_mpb1 = curve_fit(tumour_immune_model_mpb1_with_immune, tdata_mpb1_shifted, ydata_mpb1_combined, [r_0_mpb1, pN_0, q_0], 
+#                              lower=[r_min, pN_min, q_min], upper=[r_max, pN_max, q_max])
+
 # The model predictions are returned on the same scaled basis as the data.
 tumour_immune_model_mp_with_immune = (t, p) -> begin
     pred = Predictions.predict_tumour_immune(t, t_immune_mp, p, u0_immune_mp, fixed_params_mp)
@@ -130,10 +165,12 @@ tumour_immune_model_mpb1_with_immune = (t, p) -> begin
                 pred[end] / t_scale_mpb1)
 end
 
-fit_immune_mp = curve_fit(tumour_immune_model_mp_with_immune, tdata_mp, ydata_mp_combined_scaled, [r_0_mp, pN_0, q_0], 
+fit_immune_mp = curve_fit(tumour_immune_model_mp_with_immune, tdata_mp_shifted, ydata_mp_combined_scaled, [r_0_mp, pN_0, q_0], 
                            lower=[r_min, pN_min, q_min], upper=[r_max, pN_max, q_max])
-fit_immune_mpb1 = curve_fit(tumour_immune_model_mpb1_with_immune, tdata_mpb1, ydata_mpb1_combined_scaled, [r_0_mpb1, pN_0, q_0], 
+fit_immune_mpb1 = curve_fit(tumour_immune_model_mpb1_with_immune, tdata_mpb1_shifted, ydata_mpb1_combined_scaled, [r_0_mpb1, pN_0, q_0], 
                              lower=[r_min, pN_min, q_min], upper=[r_max, pN_max, q_max])
+
+
 
 
 # Finding the NK cell and T cell counts at treatment initiation time (model time) based on fitted parameters
@@ -194,6 +231,9 @@ param_cell_count = DataFrame(
 )
 
 # Write to CSV file (for fitting)
-CSV.write("./Fitted_params_results/fitted_parameters_normalised_timeshift.csv", param_df_immune)
+CSV.write("../Fitted_params_results/fitted_parameters_normalised_timeshift.csv", param_df_immune)
+
+# Write to file (for looking at hypothesis on cell counts proportion)
+#CSV.write("../Fitted_params_results/si_immune_cell_count_hypothesis/si_fitted_parameters_normalised_timeshift_06_04.csv", param_cell_count)
 
 println("Immune model initial fitting from tumour initiation complete. Parameters saved to fitted_parameters_normalised_timeshift.csv")
