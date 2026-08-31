@@ -34,6 +34,7 @@ fixed_params_immune_mp = (;
     hE = 4.49e-3,   # (mm^3), adapted from de Pillis et al. 2005
     hT = 1.18e6,    # (cells), adapted from Mongeon and Craig 2025
     N0 = 1.3e4,     # (cells/day), de Pillis et al. 2005
+    #uNE = 0.11,     # (1/mm3*day), adapted from de Pillis et al. 2005
 )
 
 fixed_params_immune_mpb1 = (;
@@ -48,6 +49,7 @@ fixed_params_immune_mpb1 = (;
     hE = 4.49e-3,   # (mm^3), adapted from de Pillis et al. 2005
     hT = 1.18e6,    # (cells), adapted from Mongeon and Craig 2025
     N0 = 1.3e4,     # (cells/day), de Pillis et al. 2005
+    #uNE = 0.11,     # (1/mm3*day), adapted from de Pillis et al. 2005
 )
 
 fixed_params_immune_cis_mp = (;
@@ -68,8 +70,8 @@ fixed_params_immune_cis_mp = (;
     hE = 4.49e-3,   # (mm^3), adapted from de Pillis et al. 2005
     hT = 1.18e6,    # (cells), adapted from Mongeon and Craig 2025
     N0 = 1.3e4,     # (cells/day), de Pillis et al. 2005
-    r  = 1.59,      # (1/days), from prior fitting of tumour-immune cells model to vehicle
-    pN = 7.51e-4,   # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
+    r  = 1.57,      # (1/days), from prior fitting of tumour-immune cells model to vehicle
+    pN = 7.49e-4,   # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
     q = 2.00e-3,    # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
 )
 
@@ -91,9 +93,9 @@ fixed_params_immune_cis_mpb1 = (;
     hE = 4.49e-3,   # (mm^3), adapted from de Pillis et al. 2005
     hT = 1.18e6,    # (cells), adapted from Mongeon and Craig 2025
     N0 = 1.3e4,     # (cells/day), de Pillis et al. 2005
-    r  = 2.07,      # (1/days), from prior fitting of tumour-immune cells model to vehicle
-    pN = 2.68e-4,   # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
-    q = 7.92e-4,    # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
+    r  = 2.03,      # (1/days), from prior fitting of tumour-immune cells model to vehicle
+    pN = 2.62e-4,   # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
+    q = 7.74e-4,    # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
 )
 
 fixed_params_mp_icb = (;
@@ -108,8 +110,9 @@ fixed_params_mp_icb = (;
     hE = 4.49e-3,   # (mm^3), adapted from de Pillis et al. 2005
     hT = 1.18e6,    # (cells), adapted from Mongeon and Craig 2025
     N0 = 1.3e4,     # (cells/day), de Pillis et al. 2005
-    r  = 1.59,      # (1/days), from prior fitting of tumour-immune cells model to vehicle
-    pN = 7.51e-4,   # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
+    #uNE = 0.11,     # (1/mm3*day), adapted from de Pillis et al. 2005
+    r  = 1.57,      # (1/days), from prior fitting of tumour-immune cells model to vehicle
+    pN = 7.49e-4,   # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
 )
 
 fixed_params_mpb1_icb = (;
@@ -124,8 +127,9 @@ fixed_params_mpb1_icb = (;
     hE = 4.49e-3,   # (mm^3), adapted from de Pillis et al. 2005
     hT = 1.18e6,    # (cells), adapted from Mongeon and Craig 2025
     N0 = 1.3e4,     # (cells/day), de Pillis et al. 2005
-    r  = 2.07,      # (1/days), from prior fitting of tumour-immune cells model to vehicle
-    pN = 2.68e-4,   # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
+    #uNE = 0.11,     # (1/mm3*day), adapted from de Pillis et al. 2005
+    r  = 2.03,      # (1/days), from prior fitting of tumour-immune cells model to vehicle
+    pN = 2.62e-4,   # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
 )
 
 fixed_params_icb_cis_mp = (;
@@ -146,9 +150,10 @@ fixed_params_icb_cis_mp = (;
     hE = 4.49e-3,   # (mm^3), adapted from de Pillis et al. 2005
     hT = 1.18e6,    # (cells), adapted from Mongeon and Craig 2025
     N0 = 1.3e4,     # (cells/day), de Pillis et al. 2005
-    r  = 1.59,      # (1/days), from prior fitting of tumour-immune cells model to vehicle
-    pN = 7.51e-4,   # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
-    q = 2.20e-3,    # (1/mm3*days), from prior fitting of tumour-immune cells model to ICB
+    #uNE = 0.11,     # (1/mm3*day), adapted from de Pillis et al. 2005
+    r  = 1.57,      # (1/days), from prior fitting of tumour-immune cells model to vehicle
+    pN = 7.49e-4,   # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
+    q = 2.14e-3,    # (1/mm3*days), from prior fitting of tumour-immune cells model to ICB
 )
 
 fixed_params_icb_cis_mpb1 = (;
@@ -169,7 +174,8 @@ fixed_params_icb_cis_mpb1 = (;
     hE = 4.49e-3,   # (mm^3), adapted from de Pillis et al. 2005
     hT = 1.18e6,    # (cells), adapted from Mongeon and Craig 2025
     N0 = 1.3e4,     # (cells/day), de Pillis et al. 2005
-    r  = 2.07,      # (1/days), from prior fitting of tumour-immune cells model to vehicle
-    pN = 2.68e-4,   # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
-    q = 1.32e-4,    # (1/mm3*days), from prior fitting of tumour-immune cells model to ICB
+    #uNE = 0.11,     # (1/mm3*day), adapted from de Pillis et al. 2005
+    r  = 2.03,      # (1/days), from prior fitting of tumour-immune cells model to vehicle
+    pN = 2.62e-4,   # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
+    q = 1.41e-4,    # (1/mm3*days), from prior fitting of tumour-immune cells model to ICB
 )
