@@ -5,12 +5,9 @@ include("../src/Models.jl")
 include("../src/Data.jl")
 include("../src/Assumptions.jl")
 include("../src/Fixed_params.jl")
-include("../src/Predictions.jl")
-using .Predictions
-
 
 # Load tumour volume data
-data = DataTools.load_tumor_datasets(data_dir = joinpath(@__DIR__, "..", "Data"))
+data = DataTools.load_tumor_datasets()
 tdata_mp_icb = data.mp_icb.t
 ydata_mp_icb = data.mp_icb.y
 tdata_mpb1_icb = data.mpb1_icb.t
@@ -39,14 +36,15 @@ u0_immune_icb_mp = [ydata_mp_icb[1], N0_treatment_initiation_mp, E0_treatment_in
 u0_immune_icb_mpb1 = [ydata_mpb1_icb[1], N0_treatment_initiation_mpb1, E0_treatment_initiation_mpb1]
 
 # Initial estimates for fitted params
-q_0_mp = 2.01e-3    # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
-q_0_mpb1 = 7.76e-4  # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
+q_0_mp = 2.00e-3    # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
+q_0_mpb1 = 7.74e-4  # (1/mm3*days), from prior fitting of tumour-immune cells model to vehicle
 
 # Bounds
 q_min = 0.00001
 q_max = 1.0
 
-
+include("../src/Predictions.jl")
+using .Predictions
 tumour_immune_model_mp_with_immune_icb = (t, p) -> begin
     states = Predictions.predict_tumour_immune_icb_q_states(t, p, u0_immune_icb_mp, fixed_params_mp_icb)
     return states[1, :]  # Only return the tumour volume predictions, as fitting is done to tumour volume data only
@@ -71,6 +69,6 @@ param_df_immune_icb = DataFrame(
 )
 
 # Write to CSV file
-CSV.write("./Fitted_params_results/fitted_parameters_normalised_immune_icb.csv", param_df_immune_icb)
+CSV.write("../Fitted_params_results/fitted_parameters_normalised_immune_icb.csv", param_df_immune_icb)
 
 println("Immune model fitting complete. Parameters saved to fitted_parameters_normalised_immune_icb.csv")

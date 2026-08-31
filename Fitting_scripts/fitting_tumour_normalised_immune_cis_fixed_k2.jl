@@ -5,10 +5,10 @@ include("../src/Models.jl");
 include("../src/Data.jl");
 include("../src/Assumptions.jl");
 include("../src/Fixed_params.jl");
-include("../src/Predictions.jl");
-using .Predictions
 
-data = DataTools.load_tumor_datasets(data_dir = joinpath(@__DIR__, "..", "Data"));
+#include("craig_lab_template.jl");
+
+data = DataTools.load_tumor_datasets();
 
 tdata_mp_cis = data.mp_cis.t;
 ydata_mp_cis = data.mp_cis.y;
@@ -22,7 +22,7 @@ initial_day_dose = 0.01;  # Start dosing at 0.01 days to avoid dosing at t=0 whi
 dose_starts = [initial_day_dose, initial_day_dose + 7.0];  # Doses 1 week apart
 
 # Load immune data and proportions via DataTools
-immune_cis = DataTools.load_immune_datasets_cis(data_dir = joinpath(@__DIR__, "..", "Data"));
+immune_cis = DataTools.load_immune_datasets_cis();
 df_immune_cis_mp = immune_cis.df_immune_cis_mp;
 df_immune_cis_mpb1 = immune_cis.df_immune_cis_mpb1;
 nk_cells_prop_cis_mp = immune_cis.nk_cells_prop_cis_mp;
@@ -76,16 +76,26 @@ u0_immune_cis_mp = [0, 0, ydata_mp_cis[1], 0, 0, 0, N0_treatment_initiation_mp, 
 u0_immune_cis_mpb1 = [0, 0, ydata_mpb1_cis[1], 0, 0, 0, N0_treatment_initiation_mpb1, E0_treatment_initiation_mpb1];
 
 # Initial estimates for fitted params
+#k2_0_mp = 8.07;
+#k2_0_mpb1 = 63.7;
 k2N_0_mp = 1.0;  # (L/mg*day)
 k2N_0_mpb1 = k2N_0_mp; # (L/mg*day)
 k2E_0_mp = 1.0;  # (L/mg*day)
 k2E_0_mpb1 = k2E_0_mp; # (L/mg*day)
 
 # Bounds
+#k2_min_mp = 8.07;
+#k2_max_mp = 8.07;
+#k2_min_mpb1 = 63.7;
+#k2_max_mpb1 = 63.7;
 k2N_min = 0.0;
 k2N_max = 500.0;
 k2E_min = 0.0;
 k2E_max = 500.0;
+
+
+include("../src/Predictions.jl");
+using .Predictions
 
 # The model predictions are returned on the same scaled basis as the data.
 tumour_immune_model_mp_cis = (t, p) -> begin
@@ -112,8 +122,10 @@ fit_immune_mpb1 = curve_fit(tumour_immune_model_mpb1_cis, tdata_mpb1_cis, ydata_
 # Create DataFrame for parameters and errors
 param_df_immune = DataFrame(
     Dataset = ["MP", "MPB1"],
+    #k2 = [fit_immune_mp.param[1], fit_immune_mpb1.param[1]],
     k2N = [fit_immune_mp.param[1], fit_immune_mpb1.param[1]],
     k2E = [fit_immune_mp.param[2], fit_immune_mpb1.param[2]],
+    #k2_stderr = [stderror(fit_immune_mp)[1], stderror(fit_immune_mpb1)[1]],
     k2N_stderr = [stderror(fit_immune_mp)[1], stderror(fit_immune_mpb1)[1]],
     k2E_stderr = [stderror(fit_immune_mp)[2], stderror(fit_immune_mpb1)[2]],
     prop_cd45_cells = fill(prop_cd45_cells, length(["MP", "MPB1"])),
@@ -121,6 +133,6 @@ param_df_immune = DataFrame(
 );
 
 # Write to CSV file
-CSV.write("./Fitted_params_results/fitted_parameters_normalised_immune_cisplatin.csv", param_df_immune)
+CSV.write("../Fitted_params_results/fitted_parameters_normalised_immune_cisplatin.csv", param_df_immune)
 
 println("Immune model fitting complete. Parameters saved to fitted_parameters_normalised_immune_cisplatin.csv")
